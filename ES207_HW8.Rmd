@@ -1,0 +1,524 @@
+---
+title: "ES207_Homework8"
+author: "Anshika"
+date: "3/22/2020"
+output: html_document
+---
+
+
+```{r}
+library(stringr)
+library(dplyr)
+library(tidyverse)
+library(readr)
+library(data.table)
+library(readxl)
+```
+
+
+** 14.2.5 Exercises**
+
+**1. In code that doesn’t use stringr, you’ll often see paste() and paste0(). What’s the difference between the two functions? What stringr function are they equivalent to? How do the functions differ in their handling of NA?**
+
+
+The function paste() and paste0 both "concatenate vectors after converting to character."
+
+```{r}
+paste1 <- paste("test", "function")
+paste2 <- paste0("test", "function")
+paste3 <- str_c("test", "function")
+paste1
+paste2
+paste3
+```
+
+However, as seen from above functions, paste() separates strings by spaces, while paste0() does not separate input variables with spaces.
+
+They are equivalent to "str_c" function and it resembles paste0 function.
+
+```{r}
+#Handling of NA
+paste("test", NA)
+paste0("test", NA)
+str_c("test", NA)
+```
+
+Both paste functions treat NA as string and convert them to characters. But str_c treats it as numeric vector and returns only NA.
+
+**2  In your own words, describe the difference between the sep and collapse arguments to str_c().**
+
+Argument "sep" in str_c is for intersting a string between two input fectors for seaprating them. Whereas, collapse is the string used to separate any elements of the character vector into a character vector of length one.
+
+**3 Use str_length() and str_sub() to extract the middle character from a string. What will you do if the string has an even number of characters?**
+
+```{r}
+str_exm <- c("apple", "banana", "pear", "pineapple")
+len <- str_length(str_exm)
+mid <- ceiling(len/2)
+mid2 <- floor(len/2)
+str_sub(str_exm, mid, mid)
+str_sub(str_exm, mid2, mid2)
+```
+
+The functions "cleiling" or "floor" can be useful to extract the middle character. If the string has an even number of characters to select middle character n/2 is used on the str_length. 
+
+**4 What does str_wrap() do? When might you want to use it?**
+
+The function str_wrap() wraps strings into formatted paragraphs. This is helpful for wrapping long strings of text to single words.
+
+```{r}
+str_exm1 <- c("The function str_wrap() wraps strings into formatted paragraphs. This is helpful for wrapping long strings of text to single words.")
+cat(str_wrap(str_exm1, width = 3, exdent = 2), "\n")
+```
+
+
+**5 What does str_trim() do? What’s the opposite of str_trim()?**
+
+The function str_trim() "removes whitespace from start and end of string."
+
+```{r}
+str_trim ("   The function str_trim() removes whitespace from start and end of string       ", side = "left")
+```
+
+
+**6 Write a function that turns (e.g.) a vector c("a", "b", "c") into the string "a, b, and c". Think carefully about what it should do if given a vector of length 0, 1, or 2.**
+
+```{r}
+str_commasep <- function(x, delim = ",") {
+  n <- length(x)
+  if (n == 0) {
+    ""
+  } else if (n == 1) {
+    x
+  } else if (n == 2) {
+    # no comma before and when n == 2
+    str_c(x[[1]], "and", x[[2]], sep = " ")
+  } else {
+    # commas after all n - 1 elements
+    not_last <- str_c(x[seq_len(n - 1)], delim)
+    # prepend "and" to the last element
+    last <- str_c("and", x[[n]], sep = " ")
+    # combine parts with spaces
+    str_c(c(not_last, last), collapse = " ")
+  }
+}
+str_commasep("")
+```
+
+```{r}
+str_commasep("a")
+```
+
+```{r}
+str_commasep(c("a", "b"))
+```
+
+```{r}
+str_commasep(c("a", "b", "c"))
+```
+
+
+**14.3.1.1 Exercises**
+
+**3. What patterns will the regular expression \..\..\.. match? How would you represent it as a string?**
+
+It will match any patterns that are a dot followed by any character, repeated three times.
+
+```{r}
+str_view(c(".a.b.c", ".a.b", "....."), c("\\..\\..\\.."), match = TRUE)
+```
+
+
+
+**14.3.3.1 Exercises**
+
+**1. Create regular expressions to find all words that:**
+
+i. Start with a vowel.
+```{r}
+str_subset(stringr::words, "^[aeiou]")
+```
+
+
+ii. That only contain consonants. (Hint: thinking about matching “not”-vowels.)
+```{r}
+str_subset(stringr::words, "^[^aeiou]+$")
+```
+
+iii. End with ed, but not with eed.
+```{r}
+str_subset(stringr::words, "[^e]ed$")
+
+```
+
+iv. End with ing or ise.
+```{r}
+str_subset(stringr::words, "i(ng|se)$")
+
+```
+
+
+**14.3.4.1 Exercises**
+
+
+**2. Describe in words what these regular expressions match: (read carefully to see if I’m using a regular expression or a string that defines a regular expression.)**
+
+i. ^.*$ = Match any string
+
+ii "\\{.+\\}" = Any string with curly braces surrounding at least one character. 
+
+iii. \d{4}-\d{2}-\d{2} =  date in “%Y-%m-%d” format: four digits followed by a dash, followed by two digits followed by a dash, followed by another two digits followed by a dash.
+
+iv. "\\\\{4}" = This resolves to the regex \\{4}, which is four backslashes.
+
+
+**14.4.1.1 Exercises**
+
+**1.For each of the following challenges, try solving it by using both a single regular expression, and a combination of multiple str_detect() calls.**
+
+Find all words that start or end with x.
+
+```{r}
+words[str_detect(words, "^x|x$")]
+
+```
+
+```{r}
+start_with_x <- str_detect(words, "^x")
+end_with_x <- str_detect(words, "x$")
+words[start_with_x | end_with_x]
+```
+
+
+Find all words that start with a vowel and end with a consonant.
+
+```{r}
+str_subset(words, "^[aeiou].*[^aeiou]$") 
+
+```
+
+```{r}
+start_with_vowel <- str_detect(words, "^[aeiou]")
+end_with_consonant <- str_detect(words, "[^aeiou]$")
+words[start_with_vowel & end_with_consonant] 
+```
+
+Are there any words that contain at least one of each different vowel?
+```{r}
+words[str_detect(words, "a") &
+        str_detect(words, "e") &
+        str_detect(words, "i") &
+        str_detect(words, "o") &
+        str_detect(words, "u")]
+```
+
+
+What word has the highest number of vowels? What word has the highest proportion of vowels? (Hint: what is the denominator?)
+
+```{r}
+#Highest ni. of vowel
+vowels <- str_count(words, "[aeiou]")
+words[which(vowels == max(vowels))]
+```
+
+```{r}
+#Highest proportion of vowel
+prop_vowels <- str_count(words, "[aeiou]") / str_length(words)
+words[which(prop_vowels == max(prop_vowels))]
+```
+
+
+**14.4.5.1 Exercises**
+
+**1. Split up a string like "apples, pears, and bananas" into individual components.**
+
+```{r}
+fruits <- c("apples, pears, and bananas")
+str_split(fruits, ", +(and +)?")[[1]]
+```
+
+**2 Why is it better to split up by boundary("word") than " "?**
+Functionsplit with argument boundary("word") is better because it recognizes punctuation and not just whitespace. It also removes punctuation while retaining internal non-letter characters that are parts of the word. 
+
+
+**14.5.1 Exercises**
+
+**2 What are the five most common words in sentences?**
+
+```{r}
+str_extract_all(sentences, boundary("word")) %>%
+  unlist() %>%
+  str_to_lower() %>%
+  tibble() %>%
+  set_names("word") %>%
+  group_by(word) %>%
+  count(sort = TRUE) %>%
+  head(5)
+```
+
+**Data Wrangling - Going Deeper- CA Air Quality Data**
+
+```{r}
+o3.filepaths <- list.files("/Users/akandhway/Coursework_Mac/CW_Spring_2020/ES_207/ES207_HW/Homework_8/ca_ozone", "\\.txt$", full.names = TRUE)
+o3.filenames <- list.files("/Users/akandhway/Coursework_Mac/CW_Spring_2020/ES_207/ES207_HW/Homework_8/ca_ozone", pattern = ".txt") # check your dirs
+o3.filenames
+```
+
+```{r}
+o3.filelist <- lapply(o3.filepaths, read_delim, delim = "|")
+```
+
+
+```{r}
+names(o3.filelist) <- gsub(".txt","", o3.filenames)
+o3.filelist
+```
+
+**3. What class is o3.filelist? What does it contain?**
+
+```{r}
+typeof(o3.filelist)
+```
+
+Here O3.filelist is a list.
+
+**4. Using ~ 1 sentence per line in the above code, explain what each line in the code is doing.**
+
+* o3.filepaths <- list.files("Homework_8/ca_ozone", "\\.txt$", full.names = TRUE) >> gives lists all files in the folder ending with .txt
+* o3.filenames <- list.files("Homework_8/ca_ozone", pattern = ".txt") >> creating a list of only file name which has .txt  types. 
+
+* o3.filelist <- lapply(o3.filepaths, read_delim, delim = "|") >> Since, o3.filst is a list, lapply is used for reading all the 
+
+names(o3.filelist) <- gsub(".txt","", o3.filenames) >> substitute file names in the list of all txt files
+
+
+**5. Rewrite the code above using the stringr package insead of grep{base}.**
+
+```{r}
+o3string <- o3.filenames
+
+o3.filelist3 <- str_replace_all(o3string, c(".*e/" = "",".txt" = ""))
+o3.filelist3
+```
+
+
+**Summarizing real world data using group_by**
+
+```{r}
+o3summarize <- function(x){
+  out <- group_by(x, site = as.factor(site), date) %>%
+  summarize(o3 = mean(obs, na.rm = TRUE))
+}
+daily <- o3.filelist %>% 
+  map(o3summarize)
+daily
+
+```
+
+
+**6. Summarize the o3 data above by site and by month and by year using a piping operator (That is, find the monthly mean o3 for each site for each year).**
+
+
+```{r}
+dailysumm <- o3.filelist %>%
+  rbindlist() %>%
+  group_by(site = as.factor(site), month = format(date, '%m'), year = format(date, '%Y')) %>%
+  summarize(o3 = mean(obs, na.rm = TRUE))
+dailysumm
+```
+
+
+**7. Ozone pollution actually follows a very strong diurnal pattern. How would you summarize the daily data from above in a better way to capture that diurnal pattern? Show me with your code.**
+
+```{r}
+diurnal <- o3.filelist %>%
+rbindlist() %>%
+filter((start_hour > 7) & (start_hour < 19)) %>%
+group_by(site, date) %>%
+summarize(meanobs = mean(obs, rm.na=TRUE))
+diurnal
+```
+
+
+**Using your string skills on real world data**
+
+```{r}
+library(tidyverse)
+library(readxl)
+loc <- read_excel("/Users/akandhway/Coursework_Mac/CW_Spring_2020/ES_207/ES207_HW/Homework_8/ca_ozone/location.xls")
+loc
+```
+
+
+**8. How many site names in the CA air quality location dataset “Site Name” contain “San” or “Santa?”.**
+
+```{r}
+counting <- str_count(loc$`Site Name`, c("San", "Santa"))
+sum(counting)
+```
+
+```{r}
+print(paste("There are San or Santa in column Site name is 75"))
+```
+
+**9. Identify the number of sites that do not have a complete address (full street address and zip code).**
+
+```{r}
+add1 <- str_count(loc$Address, c("`Location Approximate`", "`Address Not Known`"))
+sum(add1)
+```
+
+```{r}
+addr<-str_count(loc$Address,"\\d+\\s\\w")
+addr[addr==2]=1
+addr[addr==0]=NA
+zc<-str_count(loc$`Zip Code`,"\\d{5}")
+zc[zc==0]=NA
+comp_addr<-addr*zc
+total<-sum(comp_addr,na.rm=T)
+total
+```
+
+
+**10. What makes a dataset tidy?**
+
+Tidy data is standard way of representing the meaning of a dataset in its structure. It is made of variables and observations arranged in columns and rows, respectively. In addition, each cell contains a value. 
+
+**11. What is the interrelationship between the three rules of tidy data? What are the practical consequences?**
+
+Three rules are interrelated in such a manner that it is impossible to satisfy ony two of three. Its consequence is that putting each dataset in a tibble and each variable in a column.
+
+
+**12. Write a function to caculate the annual daily mean (what is the annual mean of the daily mean?). Apply that function to Merced County. What is the annual daily mean of o3 for Merced County? Report your results in quantititive format (i.e., prose, or a table), and in visual format (i.e., a graph).**
+
+
+```{r}
+library(data.table)
+daily.tibble <- rbind_list(daily)
+daily.tibble
+```
+
+
+```{r}
+colnames(loc)[1] <- "site"
+daily.site <- daily.tibble %>%
+  left_join(loc, by = "site")
+daily.site
+```
+
+```{r}
+daily.site$year <- format(as.Date(daily.site$date), format= "%Y")
+```
+
+
+```{r}
+o3.annual.daily.mean <- function(x) {
+  output <- group_by(x, year, `County Abbr`) %>%
+    summarise(annual.daily.mean= mean(o3, na.rm = TRUE))
+}
+```
+
+
+```{r}
+mcd.daily <- group_by(daily.site, year, `County Name`)
+mcd.daily <- mcd.daily%>%
+  filter(str_detect(`County Name`, 'Merced'))
+ann_mean <- o3.annual.daily.mean(mcd.daily)
+ann_mean
+```
+
+**13. Fit a loess model to daily mean o3 for Merced County over the complete time series. Use daily mean o3 as the response and time as the predictor. Plot the resulting model on a scatter plot of mean o3 vs time.**
+
+```{r}
+loess_mod <-  loess(ann_mean$annual.daily.mean ~ ann_mean$year, data = ann_mean, span=0.5)
+```
+
+```{r}
+smoothmod <- predict(loess_mod)
+```
+
+```{r}
+plot_meano3 <- ggplot(ann_mean, aes(y= annual.daily.mean, x= year)) +
+  geom_point()
+  
+plot_meano3 + geom_smooth(method = "loess", span = 0.5, se= FALSE)
+```
+
+
+
+**14. Document the long-term and seasonal trends in Merced County daily mean o3 using STL. Note that although the monitoring program aimed at collecting daily samples, there may have been occasional missing days in the record. Any missing values should be imputed using median polish with appropriate monthly or weekly averages.**
+
+
+```{r}
+#meano3_stl<- stl(smoothmod, span = 0.5)
+#Error in stl(smoothed5) : series is not periodic or has less than two periods
+
+#plot(meano3_stl)
+```
+
+**Qian chapter 6 
+Q4 
+
+```{r}
+bod.dat <- source("/Users/akandhway/Coursework_Mac/CW_Spring_2020/ES_207/ES207_HW/Homework_8/bodMCMC.s")
+bod.dat <- data.frame(Y = c(3.93, 6.8, 9.13, 10.86, 11.72, 12.58, 13.27, 14.23, 
+	15.83, 16.81, 17.96, 18.45, 19.01, 19.58, 20.08, 20.49, NA, 
+	22.46), Time = c(5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 70, 80, 
+	90, 100, 110, 120, 140, 180))
+bod.dat 
+```
+
+```{r}
+ggplot (bod.dat, aes(x = Time, y = Y)) + 
+  geom_point() + theme_bw()
+```
+
+
+```{r}
+#mod <- nls(Y ~ A - (A*exp(1-N) - lrc*bod.dat$Time*(1-N))*exp(1/(1-N)), data = bod.dat, start = c(A = 20, lrc = log(0.35), N=2),  na.action())
+#Error in nlsModel(formula, mf, start, wts) : singular gradient matrix at initial parameter estimates
+```
+
+
+
+```{r}
+modbod2 <- nls(Y ~ A*(1-exp(-exp(lrc)*Time)), data = bod.dat,
+   start = c(A = 20, lrc = log(.35)))
+coef(modbod2)
+modbod2
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
